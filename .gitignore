@@ -1,0 +1,3 @@
+*.pyc
+*~
+electiondata/local_settings.py
