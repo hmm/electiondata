@@ -24,3 +24,13 @@ Short instructions for use:
 
 6. read candidate data: ./manage.py xmlreader candidates e-2015_ehd_maa.xml.zip
 
+
+
+-----------------
+
+Addition for handling Finnish Municipal election data in 2017. Currently supports reading the csv nominator & candidate data provided at http://tulospalvelu.vaalit.fi/KV-2017/fi/ladattavat_tiedostot_ehd.html
+
+Please ask instructions by email or twitter if you are interested in using the data.
+
+
+

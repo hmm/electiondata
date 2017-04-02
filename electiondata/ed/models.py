@@ -1,5 +1,5 @@
-from django.db import models
 # -*- coding: utf-8 -*-
+from django.db import models
 
 
 # Create your models here.
@@ -57,7 +57,7 @@ class Area(models.Model):
     identifier = models.CharField(max_length=4)
     abbreviation = models.CharField(max_length=3)
     name = models.CharField(max_length=40)
-    is_city = models.BooleanField()
+    is_city = models.BooleanField(default=False)
     languages = models.CharField(max_length=1, choices=LANGUAGE_TYPES, null=True)
     joined_to = models.ForeignKey('Area', related_name='joined_areas', null=True)
     parent = models.ForeignKey('Area', related_name='children', null=True)
@@ -73,34 +73,66 @@ class Area(models.Model):
 
         return u"%s: %s" % (self.areatype, self.name)
 
+
+    @classmethod
+    def genid(cls, areatype, identifier):
+        if areatype == 'M':
+            idnum = 1
+        elif areatype == 'V':
+            idnum = 100 + int(identifier)
+        elif areatype == 'K':
+            idnum = 1000 + int(identifier)
+        elif areatype == 'A':
+            id_str = identifier
+            try:
+                id_int = int(id_str)
+            except ValueError:
+                # 0123A type identifier
+                id_int = int(id_str[:-1]) * 10 + ord(id_str[-1]) - ord('@')
+            idnum = self.current_area.id*1000 + id_int
+        return idnum
+
     def __unicode__(self):
         return u"%s: %s" % (self.id, self.name)
 
 
 class Nominator(models.Model):
     identifier = models.CharField(max_length=4)
-    name = models.CharField(max_length=80)
+    name = models.CharField(max_length=120)
     abbreviation = models.CharField(max_length=10)
+    
 
-    total_votes = models.IntegerField()
-    advance_votes = models.IntegerField()
-    electionday_votes = models.IntegerField()
-    total_pct = PctField()
-    advance_pct = PctField()
-    electionday_pct = PctField()
-    seats = models.IntegerField()
+    total_votes = models.IntegerField(null=True)
+    advance_votes = models.IntegerField(null=True)
+    electionday_votes = models.IntegerField(null=True)
+    total_pct = PctField(null=True)
+    advance_pct = PctField(null=True)
+    electionday_pct = PctField(null=True)
+    seats = models.IntegerField(null=True)
 
     def gentxt(self):
         return self.abbreviation
     
+    @classmethod
+    def genid(cls, partyid, partynum):
+        if str(partyid) != '99':
+            return int(partyid)
+        else:
+            return 9900000 + int(partynum)
+
     def __unicode__(self):
         return u"%s: %s" % (self.id, self.name)
 
 
 class Alliance(models.Model):
-    identifier = models.CharField(max_length=4)
+    identifier = models.CharField(max_length=10, null=True)
     area = models.ForeignKey(Area, related_name='alliances')
+    areatxt = models.CharField(max_length=80)
     name = models.CharField(max_length=80)
+
+    @classmethod
+    def genid(cls, area, listnumber):
+        return area.id * 1000 + int(listnumber)
 
     def __unicode__(self):
         return u"Alliance: %s - %s" % (self.name, self.area)
@@ -139,18 +171,23 @@ class Candidate(models.Model):
     home_municipality = models.ForeignKey(Area, related_name='candidatesfrom', null=True)
     home_municipality_name = models.CharField(max_length=40, null=True)
 
-    total_votes = models.IntegerField()
-    advance_votes = models.IntegerField()
-    electionday_votes = models.IntegerField()
-    total_pct = PctField()
-    advance_pct = PctField()
-    electionday_pct = PctField()
-    elected_information = models.IntegerField(choices=ELECTED_TYPES)
-    comparative_index = models.DecimalField(max_digits=12, decimal_places=3)
-    position = models.IntegerField()
+    total_votes = models.IntegerField(null=True)
+    advance_votes = models.IntegerField(null=True)
+    electionday_votes = models.IntegerField(null=True)
+    total_pct = PctField(null=True)
+    advance_pct = PctField(null=True)
+    electionday_pct = PctField(null=True)
+    elected_information = models.IntegerField(choices=ELECTED_TYPES, null=True)
+    comparative_index = models.DecimalField(max_digits=12, decimal_places=3, null=True)
+    position = models.IntegerField(null=True)
 
     def gentxt(self):
         return "%s, %s (%s/%s)" % (self.last_name, self.first_name, self.nominator.abbreviation, self.area.abbreviation)
+
+    @classmethod
+    def genid(cls, area, candidatenumber):
+        return area.id * 10000 + int(candidatenumber)
+
 
     def __unicode__(self):
         return u"%s: %s, %s (%s/%s)" % (self.id, self.last_name, self.first_name, self.nominator.abbreviation, self.area.abbreviation)
@@ -165,18 +202,32 @@ class CandidateMembership(models.Model):
     membership = models.ForeignKey(Membership, related_name='candidates')
 
 
+class NominatorArea(models.Model):
+    area = models.ForeignKey(Area, related_name='nominatorareas')
+    areatxt = models.CharField(max_length=80)
+    nominator = models.ForeignKey(Nominator, related_name='nominatorareas')
+    nominatortxt = models.CharField(max_length=80)
+
+    candidates = models.IntegerField()
+    number = models.IntegerField()
+    numberstart = models.IntegerField()
+    numberend = models.IntegerField()
+    alliance = models.ForeignKey(Alliance, related_name='nominatorareas', null=True)
+    alliancetxt = models.CharField(max_length=80, null=True)
+
+
 class NominatorResults(models.Model):
     area = models.ForeignKey(Area, related_name='nominatorresults')
     areatxt = models.CharField(max_length=80)
     nominator = models.ForeignKey(Nominator, related_name='nominatorresults')
     nominatortxt = models.CharField(max_length=80)
-    total_votes = models.IntegerField()
-    advance_votes = models.IntegerField()
-    electionday_votes = models.IntegerField()
-    total_pct = PctField()
-    advance_pct = PctField()
-    electionday_pct = PctField()
-    seats = models.IntegerField()
+    total_votes = models.IntegerField(null=True)
+    advance_votes = models.IntegerField(null=True)
+    electionday_votes = models.IntegerField(null=True)
+    total_pct = PctField(null=True)
+    advance_pct = PctField(null=True)
+    electionday_pct = PctField(null=True)
+    seats = models.IntegerField(null=True)
 
 
 

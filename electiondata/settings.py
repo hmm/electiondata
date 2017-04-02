@@ -77,11 +77,9 @@ WSGI_APPLICATION = 'electiondata.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ek2015',
-        'USER': 'ek2015',
-        'HOST': 'localhost',
-        'PORT': '',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'kv2017',
+        'USER': 'kv2017',
     }
 }
 
