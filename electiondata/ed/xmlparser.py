@@ -281,7 +281,7 @@ class ResultsParser(XMLParser):
                 )
         else:
             self.current_area = None
-        print self.current_area
+        print self.current_area, self.current_area.areatype
 
 
     def end_electoral_area(self, event, element):
@@ -297,13 +297,13 @@ class ResultsParser(XMLParser):
         if element.attrib.get('standard-party-number') != '99':
             return int(element.attrib.get('standard-party-number'))
         else:
-            return 990000 + int(element.attrib.get('party-identifier'))
+            return 9900000 + int(element.attrib.get('party-identifier'))
 
 
 class NominatorParser(ResultsParser):
 
     def start_nominator(self, event, element):
-        if self.current_area.areatype in ['M', 'V']:
+        if self.current_area.areatype in ['M', 'V', 'K']:
             (self.current_nominator, created) = Nominator.objects.get_or_create(
                 id = self.get_nominator_id(element),
                 defaults = dict(
@@ -382,7 +382,7 @@ class CandidateParser(ResultsParser):
         pass
         
     def start_candidate(self, event, element):
-        if self.current_area.areatype == 'V':
+        if self.current_area.areatype in ['K', 'V', 'A']:
             try:
                 home_municipality = Area.objects.get(
                     areatype='K',
@@ -392,7 +392,7 @@ class CandidateParser(ResultsParser):
                 home_municipality = None
 
             (candidate, created) = Candidate.objects.update_or_create(
-                id = self.current_area.id * 1000 + int(element.attrib.get('candidate-number')),
+                id = self.current_area.id * 10000 + int(element.attrib.get('candidate-number')),
                 defaults = dict(
                     candidate_number = element.attrib.get('candidate-number'),
                     area = self.current_area,
@@ -421,12 +421,9 @@ class CandidateParser(ResultsParser):
             self.current_candidate = candidate
             if created:
                 print candidate
-        elif self.current_area.areatype == 'K':
-            self.current_candidate = Candidate.objects.get(
-                id = self.current_area.parent.id * 1000 + int(element.attrib.get('candidate-number')))
         else:
             self.current_candidate = Candidate.objects.get(
-                id = self.current_area.parent.parent.id * 1000 + int(element.attrib.get('candidate-number')))
+                id = self.current_area.parent.parent.id * 10000 + int(element.attrib.get('candidate-number')))
             
         (candidateresults, created) = CandidateResults.objects.update_or_create(
             candidate = self.current_candidate,

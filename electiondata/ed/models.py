@@ -97,7 +97,7 @@ class Area(models.Model):
 
 
 class Nominator(models.Model):
-    identifier = models.CharField(max_length=4)
+    identifier = models.CharField(max_length=10)
     name = models.CharField(max_length=120)
     abbreviation = models.CharField(max_length=10)
     
@@ -157,6 +157,7 @@ class Candidate(models.Model):
         ('1', 'Male'),
         ('2', 'Female'),
     )
+    id = models.BigAutoField(primary_key=True)
     area = models.ForeignKey(Area, related_name='candidates')
     areatxt = models.CharField(max_length=80)
     nominator = models.ForeignKey(Nominator, related_name='candidates')
@@ -232,6 +233,7 @@ class NominatorResults(models.Model):
 
 
 class CandidateResults(models.Model):
+    id = models.BigAutoField(primary_key=True)
     area = models.ForeignKey(Area, related_name='candidateresults')
     areatxt = models.CharField(max_length=80)
     nominator = models.ForeignKey(Nominator, related_name='candidateresults')
