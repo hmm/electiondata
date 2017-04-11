@@ -315,13 +315,13 @@ class VotingDataComparison(models.Model):
     comparison = models.ForeignKey(ComparisonElection, related_name='votingdatacomparison')
     comparisontxt = models.CharField(max_length=80)
 
-    eligible_total = models.IntegerField()
-    eligible_men = models.IntegerField()
-    eligible_women = models.IntegerField()
+    eligible_total = models.IntegerField(null=True)
+    eligible_men = models.IntegerField(null=True)
+    eligible_women = models.IntegerField(null=True)
 
     eligible_finland_total = models.IntegerField()
-    eligible_finland_men = models.IntegerField()
-    eligible_finland_women = models.IntegerField()
+    eligible_finland_men = models.IntegerField(null=True)
+    eligible_finland_women = models.IntegerField(null=True)
 
     total_turnout = XPctField()
     advance_turnout = XPctField()

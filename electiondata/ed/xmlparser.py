@@ -218,17 +218,17 @@ class AreaParser(XMLParser):
             defaults = dict(
                 areatxt = self.current_area.gentxt(),
                 comparisontxt = comparison.gentxt(),
-                eligible_total = self.current_voting_data.attrib.get('eligible-voters-total'),
-                eligible_men = self.current_voting_data.attrib.get('eligible-voters-men'),
-                eligible_women = self.current_voting_data.attrib.get('eligible-voters-women'),
+                eligible_total = element.attrib.get('eligible-voters-total'),
+                eligible_men = element.attrib.get('eligible-voters-men'),
+                eligible_women = element.attrib.get('eligible-voters-women'),
 
-                eligible_finland_total = self.current_voting_data.attrib.get('eligible-voters-living-in-finland-total'),
-                eligible_finland_men = self.current_voting_data.attrib.get('eligible-voters-living-in-finland-men'),
-                eligible_finland_women = self.current_voting_data.attrib.get('eligible-voters-living-in-finland-women'),
+                eligible_finland_total = element.attrib.get('eligible-voters-living-in-finland-total'),
+                eligible_finland_men = element.attrib.get('eligible-voters-living-in-finland-men'),
+                eligible_finland_women = element.attrib.get('eligible-voters-living-in-finland-women'),
 
-                total_turnout = self.current_voting_data.attrib.get('total-voting-turnout'),
-                advance_turnout = self.current_voting_data.attrib.get('advance-voting-turnout'),
-                electionday_turnout = self.current_voting_data.attrib.get('election-day-voting-turnout'),
+                total_turnout = element.attrib.get('total-voting-turnout'),
+                advance_turnout = element.attrib.get('advance-voting-turnout'),
+                electionday_turnout = element.attrib.get('election-day-voting-turnout'),
 
                 total_approved_votes = element.attrib.get('approved-votes-total'),
                 total_invalid_votes = element.attrib.get('invalid-votes-total'),
@@ -382,7 +382,7 @@ class CandidateParser(ResultsParser):
         pass
         
     def start_candidate(self, event, element):
-        if self.current_area.areatype in ['K', 'V', 'A']:
+        if self.current_area.areatype in ['K', 'V']:
             try:
                 home_municipality = Area.objects.get(
                     areatype='K',
@@ -423,7 +423,7 @@ class CandidateParser(ResultsParser):
                 print candidate
         else:
             self.current_candidate = Candidate.objects.get(
-                id = self.current_area.parent.parent.id * 10000 + int(element.attrib.get('candidate-number')))
+                id = self.current_area.parent.id * 10000 + int(element.attrib.get('candidate-number')))
             
         (candidateresults, created) = CandidateResults.objects.update_or_create(
             candidate = self.current_candidate,
